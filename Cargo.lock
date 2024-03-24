@@ -1039,7 +1039,7 @@ dependencies = [
 
 [[package]]
 name = "billion_meters_into_space"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "bevy",
  "rand",

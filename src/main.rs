@@ -7,6 +7,7 @@ fn main() {
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
                     resolution: bevy::window::WindowResolution::new(WIDTH, HEIGHT),
+                    title: "Billion Meters Into Space".to_string(),
                     ..Default::default()
                 }),
                 ..Default::default()

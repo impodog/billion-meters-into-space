@@ -12,6 +12,7 @@ pub struct Velocity {
 pub struct Acceleration {
     pub x: f32,
     pub y: f32,
+    pub modify_flag: bool,
 }
 
 #[derive(Debug, Component)]
@@ -30,11 +31,21 @@ impl Velocity {
     pub fn is_zero(&self) -> bool {
         self.x == 0.0 && self.y == 0.0
     }
+
+    pub fn length(&self) -> f32 {
+        (self.x * self.x + self.y * self.y).sqrt()
+    }
 }
 
 impl Into<Vec2> for &Velocity {
     fn into(self) -> Vec2 {
         Vec2::new(self.x, self.y)
+    }
+}
+
+impl Default for Velocity {
+    fn default() -> Self {
+        Self { x: 0.0, y: 0.0 }
     }
 }
 
@@ -47,6 +58,16 @@ impl Acceleration {
 impl Into<Vec2> for &Acceleration {
     fn into(self) -> Vec2 {
         Vec2::new(self.x, self.y)
+    }
+}
+
+impl Default for Acceleration {
+    fn default() -> Self {
+        Self {
+            x: 0.0,
+            y: 0.0,
+            modify_flag: false,
+        }
     }
 }
 
@@ -90,10 +111,12 @@ pub(super) fn acceleration(mut q_vel: Query<(&mut Velocity, &mut Acceleration, &
             if !acc.is_zero() {
                 vel.x += acc.x;
                 vel.y += acc.y;
+                //println!("Acceleration: {:?}", acc);
                 transform.rotation =
                     Quat::from_axis_angle(Vec3::new(0.0, 0.0, -1.0), acc.x.atan2(acc.y));
                 acc.x = 0.0;
                 acc.y = 0.0;
+                acc.modify_flag = true;
 
                 vel.x *= FRICTION;
                 vel.y *= FRICTION;
@@ -104,6 +127,8 @@ pub(super) fn acceleration(mut q_vel: Query<(&mut Velocity, &mut Acceleration, &
                 if vel.y.abs() < 0.001 {
                     vel.y = 0.0;
                 }
+            } else {
+                acc.modify_flag = false;
             }
         });
 }
@@ -125,4 +150,22 @@ pub(super) fn player_move(
     let transform = q_player.single();
     q_transform.single_mut().translation.x += transform.translation.x - r_player.x;
     q_transform.single_mut().translation.y += transform.translation.y - r_player.y;
+}
+
+pub(super) fn despawn_when_end(
+    mut commands: Commands,
+    q_subst: Query<
+        Entity,
+        Or<(
+            With<Substance>,
+            With<PlayerTextMarker>,
+            With<PlasmaMarker>,
+            With<Enemy>,
+            With<Supply>,
+        )>,
+    >,
+) {
+    q_subst.iter().for_each(|entity| {
+        commands.entity(entity).despawn_recursive();
+    });
 }
