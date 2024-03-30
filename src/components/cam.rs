@@ -3,6 +3,10 @@ use super::*;
 #[derive(Component)]
 pub struct CameraMarker;
 
+// This is for components that should not be killed too soon by camera
+#[derive(Component)]
+pub struct DontJustKillMe;
+
 pub(super) fn setup_camera(mut commands: Commands) {
     commands.spawn((
         Camera2dBundle {
@@ -41,13 +45,20 @@ pub(super) fn remove_outbound(
         (Entity, &Transform),
         (Without<CameraMarker>, Without<Player>, With<Substance>),
     >,
+    q_dont_kill: Query<(), With<DontJustKillMe>>,
 ) {
     let camera = q_camera.single();
 
     q_entity.iter().for_each(|(entity, transform)| {
         let diff = camera.translation - transform.translation;
-        if diff.x.abs() > WIDTH / 2.0 || diff.y.abs() > HEIGHT / 2.0 {
-            commands.entity(entity).despawn_recursive();
+        if q_dont_kill.get(entity).is_ok() {
+            if diff.x.abs() > WIDTH || diff.y.abs() > HEIGHT {
+                commands.entity(entity).despawn_recursive();
+            }
+        } else {
+            if diff.x.abs() > WIDTH / 2.0 || diff.y.abs() > HEIGHT / 2.0 {
+                commands.entity(entity).despawn_recursive();
+            }
         }
     });
 }

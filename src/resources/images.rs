@@ -7,7 +7,7 @@ pub struct PlayerImage {
 
 #[derive(Resource)]
 pub struct PlayerImageRes {
-    start: Handle<Image>,
+    pub start: Handle<Image>,
     a: Handle<Image>,
     b: Handle<Image>,
 }
@@ -27,6 +27,15 @@ pub struct RockImage(pub Vec<Handle<Image>>);
 #[derive(Resource)]
 pub struct PlaneImage(pub Handle<Image>);
 
+#[derive(Resource)]
+pub struct SunImage(pub Handle<Image>);
+
+#[derive(Resource)]
+pub struct StationImage(pub Handle<Image>);
+
+#[derive(Resource)]
+pub struct MissileImage(pub Handle<Image>);
+
 pub(super) fn setup_image(mut commands: Commands, asset_server: Res<AssetServer>) {
     let start = asset_server.load("player_s.png");
     let a = asset_server.load("player_a.png");
@@ -41,18 +50,18 @@ pub(super) fn setup_image(mut commands: Commands, asset_server: Res<AssetServer>
         asset_server.load("rock2.png"),
     ]));
     commands.insert_resource(PlaneImage(asset_server.load("plane.png")));
+    commands.insert_resource(SunImage(asset_server.load("sun.png")));
+    commands.insert_resource(StationImage(asset_server.load("station.png")));
+    commands.insert_resource(MissileImage(asset_server.load("mis.png")));
 }
 
 pub(super) fn player_image(
-    mut q_image: Query<
-        (
-            &Velocity,
-            &Acceleration,
-            &mut PlayerImage,
-            &mut Handle<Image>,
-        ),
-        With<Player>,
-    >,
+    mut q_image: Query<(
+        &Velocity,
+        &Acceleration,
+        &mut PlayerImage,
+        &mut Handle<Image>,
+    )>,
     r_player_image: Res<PlayerImageRes>,
     mut timer: Local<Timer>,
     time: Res<Time>,

@@ -36,6 +36,10 @@ impl Plugin for ComponentsPlugin {
                     enemy::spawn_rock,
                     enemy::spawn_plane,
                     enemy::plane_move,
+                    enemy::spawn_sun,
+                    enemy::spawn_station,
+                    enemy::station_shoot_missile,
+                    enemy::spawn_fake_player,
                     supply::spawn_supply,
                 ),
                 (
@@ -49,6 +53,7 @@ impl Plugin for ComponentsPlugin {
                     enemy::test_enemy_plasma_bump,
                     enemy::test_enemy_player_bump,
                     enemy::test_enemy_kill,
+                    enemy::test_sun_other_bump,
                     supply::test_player_supply_bump,
                 ),
             )

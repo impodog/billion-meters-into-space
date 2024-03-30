@@ -44,7 +44,7 @@ pub(super) fn spawn_supply(
         SUPPLY_SPAWN_COEFFICIENT as f64 * vel.length() as f64,
         TARGET_DISTANCE as f64,
     ) {
-        let pos = seed.rand_non_center_vec3() + pos;
+        let pos = seed.rand_center_vec3() + pos;
         let size = Vec2::new(50.0, 100.0);
         commands.spawn((
             Supply {

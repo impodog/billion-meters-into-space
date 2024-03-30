@@ -15,6 +15,9 @@ pub struct Acceleration {
     pub modify_flag: bool,
 }
 
+#[derive(Component)]
+pub struct NoTurning;
+
 #[derive(Debug, Component)]
 pub struct Substance {
     pub mass: f32,
@@ -104,16 +107,22 @@ pub(super) fn velocity(mut q_vel: Query<(&Velocity, &mut Transform)>) {
     });
 }
 
-pub(super) fn acceleration(mut q_vel: Query<(&mut Velocity, &mut Acceleration, &mut Transform)>) {
+pub(super) fn acceleration(
+    mut q_vel: Query<(Entity, &mut Velocity, &mut Acceleration, &mut Transform)>,
+    q_no_turning: Query<(), With<NoTurning>>,
+) {
     q_vel
         .iter_mut()
-        .for_each(|(mut vel, mut acc, mut transform)| {
+        .for_each(|(entity, mut vel, mut acc, mut transform)| {
             if !acc.is_zero() {
                 vel.x += acc.x;
                 vel.y += acc.y;
                 //println!("Acceleration: {:?}", acc);
-                transform.rotation =
-                    Quat::from_axis_angle(Vec3::new(0.0, 0.0, -1.0), acc.x.atan2(acc.y));
+                if q_no_turning.get(entity).is_err() {
+                    transform.rotation =
+                        Quat::from_axis_angle(Vec3::new(0.0, 0.0, -1.0), acc.x.atan2(acc.y));
+                }
+
                 acc.x = 0.0;
                 acc.y = 0.0;
                 acc.modify_flag = true;
@@ -143,13 +152,12 @@ pub(super) fn player_record_pos(
 }
 
 pub(super) fn player_move(
-    r_player: Res<PlayerPosModify>,
     q_player: Query<&Transform, With<Player>>,
     mut q_transform: Query<&mut Transform, (With<CameraMarker>, Without<Player>)>,
 ) {
     let transform = q_player.single();
-    q_transform.single_mut().translation.x += transform.translation.x - r_player.x;
-    q_transform.single_mut().translation.y += transform.translation.y - r_player.y;
+    q_transform.single_mut().translation.x = transform.translation.x;
+    q_transform.single_mut().translation.y = transform.translation.y;
 }
 
 pub(super) fn despawn_when_end(
