@@ -49,3 +49,4 @@ pub static FAKE_PLAYER_HEALTH: f32 = 50.0;
 pub static FAKE_PLAYER_SPAWN_COEFFICIENT: f32 = 3e2;
 pub static FAKE_PLAYER_SPEED_MIN: f32 = 6.0;
 pub static FAKE_PLAYER_SPEED_MAX: f32 = 12.0;
+pub static MAX_SPEED: f32 = 30.0;
