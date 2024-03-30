@@ -12,15 +12,9 @@ impl Default for Save {
 }
 
 pub(super) fn setup_save(mut commands: Commands) {
-    let str = std::fs::read_to_string("save.toml");
-    let save: Save = match str {
-        Ok(str) => toml::from_str(&str).unwrap(),
-        Err(_) => Save::default(),
-    };
-    commands.insert_resource(save);
+    commands.insert_resource(Save::default());
 }
 
-pub(super) fn save(save: Res<Save>) {
-    let str = toml::to_string(&*save).unwrap();
-    std::fs::write("save.toml", str).unwrap();
+pub(super) fn save(_save: Res<Save>) {
+    // Saving in web is not supported
 }

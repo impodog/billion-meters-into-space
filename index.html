@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Million Meters Into Space</title>
+    <script type="module">
+        import init from './pkg/billion_meters_into_space.js';
+
+        async function run() {
+            const wasm = await init();
+            wasm.run();
+        }
+
+        run();
+    </script>
+</head>
+<body>
+    <h1>Play this game now!</h1>
+</body>
+</html>
