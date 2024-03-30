@@ -136,6 +136,13 @@ pub(super) fn acceleration(
                 if vel.y.abs() < 0.001 {
                     vel.y = 0.0;
                 }
+
+                let v: Vec2 = (&*vel).into();
+                if v.length() > MAX_SPEED {
+                    let v = v.normalize_or_zero() * MAX_SPEED;
+                    vel.x = v.x;
+                    vel.y = v.y;
+                }
             } else {
                 acc.modify_flag = false;
             }

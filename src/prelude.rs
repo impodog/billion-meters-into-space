@@ -49,13 +49,15 @@ pub static FAKE_PLAYER_HEALTH: f32 = 50.0;
 pub static FAKE_PLAYER_SPAWN_COEFFICIENT: f32 = 3e2;
 pub static FAKE_PLAYER_SPEED_MIN: f32 = 6.0;
 pub static FAKE_PLAYER_SPEED_MAX: f32 = 12.0;
+pub static MAX_SPEED: f32 = 30.0;
 
 fn start_app() {
     App::new()
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
-                    resolution: bevy::window::WindowResolution::new(WIDTH, HEIGHT),
+                    resolution: bevy::window::WindowResolution::new(WIDTH, HEIGHT)
+                        .with_scale_factor_override(1.0),
                     title: "Billion Meters Into Space".to_string(),
                     ..Default::default()
                 }),
