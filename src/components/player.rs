@@ -1,3 +1,5 @@
+use bevy::input::touch::TouchPhase;
+
 use super::*;
 
 #[derive(Component)]
@@ -90,60 +92,76 @@ pub(super) fn shoot_player(
     q_window: Query<&Window>,
     q_camera: Query<(&Camera, &GlobalTransform), With<CameraMarker>>,
     q_button: Res<ButtonInput<MouseButton>>,
+    mut e_touch: EventReader<TouchInput>,
 ) {
-    if q_button.just_pressed(MouseButton::Left) {
+    let mut position = if q_button.just_pressed(MouseButton::Left) {
         let (camera, camera_transform) = q_camera.single();
 
         let window = q_window.single();
 
-        if let Some(position) = window
+        window
             .cursor_position()
             .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
             .map(|ray| ray.origin.truncate())
-        {
-            let (player, vel, mut acc, mut subst, transform) = q_player.single_mut();
-            let mut direction = -(position - transform.translation.xy()).normalize_or_zero();
+    } else {
+        None
+    };
 
-            if direction != Vec2::ZERO && subst.mass - PLASMA_MASS >= player.body_mass {
-                let vel: Vec2 = vel.into();
-                direction = direction * (PLASMA_SHOOT_SPEED + vel.length());
-                subst.mass -= PLASMA_MASS;
+    e_touch.read().for_each(|input| match input.phase {
+        TouchPhase::Ended => {
+            position = {
+                let (camera, camera_transform) = q_camera.single();
+                camera
+                    .viewport_to_world(camera_transform, input.position)
+                    .map(|ray| ray.origin.truncate())
+            };
+        }
+        _ => {}
+    });
 
-                let player_speed =
-                    (vel * (subst.mass + PLASMA_MASS) + direction * PLASMA_MASS) / subst.mass;
-                acc.x += player_speed.x - vel.x;
-                acc.y += player_speed.y - vel.y;
-                direction = -direction;
-                let vel = Velocity {
-                    x: direction.x,
-                    y: direction.y,
-                };
-                direction = direction.normalize();
+    if let Some(position) = position {
+        let (player, vel, mut acc, mut subst, transform) = q_player.single_mut();
+        let mut direction = -(position - transform.translation.xy()).normalize_or_zero();
 
-                let size = Vec2::new(10.0, 10.0);
-                commands.spawn((
-                    PlasmaMarker,
-                    vel,
-                    Acceleration::default(),
-                    Substance {
-                        mass: PLASMA_MASS,
-                        size,
-                    },
-                    SpriteBundle {
-                        sprite: Sprite {
-                            custom_size: Some(Vec2::new(10.0, 10.0)),
-                            ..Default::default()
-                        },
-                        transform: Transform::from_translation(Vec3::new(
-                            direction.x * APPROX_PLAYER_SIZE + transform.translation.x,
-                            direction.y * APPROX_PLAYER_SIZE + transform.translation.y,
-                            0.0,
-                        )),
-                        texture: plasma.0.clone(),
+        if direction != Vec2::ZERO && subst.mass - PLASMA_MASS >= player.body_mass {
+            let vel: Vec2 = vel.into();
+            direction = direction * (PLASMA_SHOOT_SPEED + vel.length());
+            subst.mass -= PLASMA_MASS;
+
+            let player_speed =
+                (vel * (subst.mass + PLASMA_MASS) + direction * PLASMA_MASS) / subst.mass;
+            acc.x += player_speed.x - vel.x;
+            acc.y += player_speed.y - vel.y;
+            direction = -direction;
+            let vel = Velocity {
+                x: direction.x,
+                y: direction.y,
+            };
+            direction = direction.normalize();
+
+            let size = Vec2::new(10.0, 10.0);
+            commands.spawn((
+                PlasmaMarker,
+                vel,
+                Acceleration::default(),
+                Substance {
+                    mass: PLASMA_MASS,
+                    size,
+                },
+                SpriteBundle {
+                    sprite: Sprite {
+                        custom_size: Some(Vec2::new(10.0, 10.0)),
                         ..Default::default()
                     },
-                ));
-            }
+                    transform: Transform::from_translation(Vec3::new(
+                        direction.x * APPROX_PLAYER_SIZE + transform.translation.x,
+                        direction.y * APPROX_PLAYER_SIZE + transform.translation.y,
+                        0.0,
+                    )),
+                    texture: plasma.0.clone(),
+                    ..Default::default()
+                },
+            ));
         }
     }
 }

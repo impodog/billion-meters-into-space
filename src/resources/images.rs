@@ -16,6 +16,9 @@ pub struct PlayerImageRes {
 pub struct MilkyWay(pub Handle<Image>);
 
 #[derive(Resource)]
+pub struct Background(pub Handle<Image>);
+
+#[derive(Resource)]
 pub struct PlasmaImage(pub Handle<Image>);
 
 #[derive(Resource)]
@@ -43,6 +46,7 @@ pub(super) fn setup_image(mut commands: Commands, asset_server: Res<AssetServer>
 
     commands.insert_resource(PlayerImageRes { start, a, b });
     commands.insert_resource(MilkyWay(asset_server.load("milky_way.png")));
+    commands.insert_resource(Background(asset_server.load("backg.png")));
     commands.insert_resource(PlasmaImage(asset_server.load("plasma.png")));
     commands.insert_resource(SupplyImage(asset_server.load("supply.png")));
     commands.insert_resource(RockImage(vec![

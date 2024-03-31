@@ -153,7 +153,9 @@ pub(super) fn spawn_sun(
         TARGET_DISTANCE as f64,
     ) {
         let pos = seed.rand_non_center_vec3() + pos;
-        let size = Vec2::new(SUN_SIZE, SUN_SIZE);
+        let mass = seed.rand_range(SUN_MASS_MIN..SUN_MASS_MAX);
+        let size = SUN_SIZE_MAX * mass / SUN_MASS_MAX;
+        let size = Vec2::new(size, size);
         commands.spawn((
             Enemy { health: SUN_HEALTH },
             SunMarker,
@@ -161,10 +163,7 @@ pub(super) fn spawn_sun(
             NoTurning,
             Velocity::default(),
             Acceleration::default(),
-            Substance {
-                mass: SUN_MASS,
-                size,
-            },
+            Substance { mass, size },
             SpriteBundle {
                 sprite: Sprite {
                     custom_size: Some(size),
