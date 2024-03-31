@@ -55,39 +55,66 @@ pub(super) fn remove_ending_msg(mut commands: Commands, q: Query<Entity, With<Te
     });
 }
 
+pub struct SwipeTimer {
+    timer: Timer,
+}
+
+impl Default for SwipeTimer {
+    fn default() -> Self {
+        Self {
+            timer: Timer::from_seconds(0.2, TimerMode::Repeating),
+        }
+    }
+}
+
 pub(super) fn test_restart(
     cur_state: Res<State<Status>>,
     mut state: ResMut<NextState<Status>>,
     key: Res<ButtonInput<KeyCode>>,
-    mouse: Res<ButtonInput<MouseButton>>,
-    mut e_touch: EventReader<TouchInput>,
+    click: Res<ButtonInput<MouseButton>>,
+    mut touch: EventReader<TouchInput>,
+    mut timer: Local<SwipeTimer>,
+    mut is_swipe: Local<bool>,
+    time: Res<Time>,
 ) {
-    let mut click = false;
-    let mut swipe = false;
-    if mouse.just_pressed(MouseButton::Left) {
-        click = true;
-    }
-    for touch in e_touch.read() {
-        match touch.phase {
-            TouchPhase::Moved => {
-                swipe = true;
-            }
-            TouchPhase::Ended => {
-                if !swipe {
-                    click = true;
+    let click = click.just_pressed(MouseButton::Left);
+    let (click, swipe) = if click {
+        (true, false)
+    } else {
+        touch.read().fold((false, false), |(click, swipe), touch| {
+            if click || swipe {
+                (click, swipe)
+            } else {
+                match touch.phase {
+                    TouchPhase::Ended if !*is_swipe => {
+                        timer.timer.reset();
+                        (true, false)
+                    }
+                    TouchPhase::Moved => {
+                        timer.timer.tick(time.delta());
+                        if timer.timer.finished() {
+                            *is_swipe = true;
+                            (false, true)
+                        } else {
+                            (click, swipe)
+                        }
+                    }
+                    TouchPhase::Started => {
+                        timer.timer.reset();
+                        *is_swipe = false;
+                        (false, false)
+                    }
+                    _ => (click, swipe),
                 }
             }
-            _ => {}
-        }
-    }
+        })
+    };
 
     if key.just_pressed(KeyCode::KeyR) || click || swipe {
         let next = match cur_state.get() {
             Status::Over => Status::Play,
             _ if !click => Status::Over,
-            _ => {
-                return;
-            }
+            _ => return,
         };
         state.set(next);
     }

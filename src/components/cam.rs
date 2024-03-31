@@ -7,6 +7,9 @@ pub struct CameraMarker;
 #[derive(Component)]
 pub struct DontJustKillMe;
 
+#[derive(Component)]
+pub struct BackgroundMarker;
+
 pub(super) fn setup_camera(mut commands: Commands) {
     commands.spawn((
         Camera2dBundle {
@@ -17,25 +20,49 @@ pub(super) fn setup_camera(mut commands: Commands) {
     ));
 }
 
-pub(super) fn setup_background(
-    mut commands: Commands,
-    q_camera: Query<Entity, With<CameraMarker>>,
-    milky_way: Res<MilkyWay>,
+pub(super) fn setup_background(mut commands: Commands, backg: Res<Background>) {
+    for x in -1..=1 {
+        for y in -1..=1 {
+            commands.spawn((
+                BackgroundMarker,
+                SpriteBundle {
+                    sprite: Sprite {
+                        custom_size: Some(Vec2::new(WIDTH, HEIGHT)),
+                        ..Default::default()
+                    },
+                    texture: backg.0.clone(),
+                    transform: Transform::from_translation(Vec3::new(
+                        0.0 + x as f32 * WIDTH,
+                        0.0 + y as f32 * HEIGHT,
+                        -10.0,
+                    )),
+                    ..Default::default()
+                },
+            ));
+        }
+    }
+}
+
+pub(super) fn recycle_background(
+    q_camera: Query<&Transform, (With<CameraMarker>, Without<BackgroundMarker>)>,
+    mut q_entity: Query<&mut Transform, With<BackgroundMarker>>,
 ) {
     let camera = q_camera.single();
-    let child = commands
-        .spawn(SpriteBundle {
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(WIDTH, HEIGHT)),
-                color: Color::rgba(1.0, 1.0, 1.0, 0.1),
-                ..Default::default()
-            },
-            texture: milky_way.0.clone(),
-            transform: Transform::from_translation(Vec3::new(0.0, 0.0, -10.0)),
-            ..Default::default()
-        })
-        .id();
-    commands.entity(camera).add_child(child);
+    q_entity.iter_mut().for_each(|mut transform| {
+        let diff = camera.translation - transform.translation;
+        if diff.x > WIDTH {
+            transform.translation.x += WIDTH * 3.0;
+        }
+        if diff.x < -WIDTH {
+            transform.translation.x -= WIDTH * 3.0;
+        }
+        if diff.y > HEIGHT {
+            transform.translation.y += HEIGHT * 3.0;
+        }
+        if diff.y < -HEIGHT {
+            transform.translation.y -= HEIGHT * 3.0;
+        }
+    });
 }
 
 pub(super) fn remove_outbound(

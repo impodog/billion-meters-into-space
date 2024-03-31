@@ -33,6 +33,7 @@ impl Plugin for ComponentsPlugin {
                     force::test_bump,
                     player::shoot_player,
                     cam::remove_outbound,
+                    cam::recycle_background,
                     enemy::spawn_rock,
                     enemy::spawn_plane,
                     enemy::plane_move,

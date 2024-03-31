@@ -17,13 +17,17 @@ impl Default for Supply {
 
 pub(super) fn test_player_supply_bump(
     mut commands: Commands,
-    mut q_player: Query<(&mut Player, &mut Substance)>,
+    mut q_player: Query<(&mut Player, &mut Substance, &mut Velocity)>,
     mut q_supply: Query<&Supply>,
     mut e_bump: EventReader<BumpEvent>,
 ) {
     e_bump.read().for_each(|event| {
-        if let Ok((mut player, mut subst)) = q_player.get_mut(event.a) {
+        if let Ok((mut player, mut subst, mut vel)) = q_player.get_mut(event.a) {
             if let Ok(supply) = q_supply.get_mut(event.b) {
+                let vel_vec: Vec2 = (&*vel).into();
+                let vel_vec = vel_vec * subst.mass / (subst.mass + supply.fuel);
+                vel.x = vel_vec.x;
+                vel.y = vel_vec.y;
                 subst.mass += supply.fuel;
                 player.health += supply.health;
                 commands.entity(event.b).despawn_recursive();
