@@ -48,13 +48,13 @@ pub(super) fn spawn_player(
     ));
     let style = TextStyle {
         font: r_font.0.clone(),
-        font_size: 15.0,
+        font_size: 20.0,
         color: Color::WHITE,
     };
     let style_big = TextStyle {
         font: r_mono.0.clone(),
-        font_size: 20.0,
-        color: Color::CYAN,
+        font_size: 25.0,
+        color: Color::YELLOW,
     };
     commands.spawn((
         Text2dBundle {
@@ -70,8 +70,12 @@ pub(super) fn spawn_player(
                 TextSection::new("\nCoordinates:  ", style.clone()),
                 TextSection::new("(0.0, 0.0)", style_big.clone()),
             ]),
-            text_anchor: bevy::sprite::Anchor::CenterLeft,
-            transform: Transform::from_translation(Vec3::new(0.0, 100.0, 100.0)),
+            text_anchor: bevy::sprite::Anchor::TopLeft,
+            transform: Transform::from_translation(Vec3::new(
+                -WIDTH / 2.0 + 10.0,
+                HEIGHT / 2.0 - 10.0,
+                100.0,
+            )),
             ..Default::default()
         },
         PlayerTextMarker,
@@ -193,8 +197,8 @@ pub(super) fn update_player(
                 transform.translation.y,
                 transform.translation.length()
             );
-            text_transform.translation = transform.translation;
-            text_transform.translation.y += 100.0;
+            text_transform.translation.x = transform.translation.x - WIDTH / 2.0 + 10.0;
+            text_transform.translation.y = transform.translation.y + HEIGHT / 2.0 - 10.0;
         });
     stat.distance = transform.translation.length();
 }
